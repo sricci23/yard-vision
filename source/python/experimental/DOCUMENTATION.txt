@@ -1,0 +1,17 @@
+
+hough_lines
+
+Results:
+Getting good solid lines, with redundancies, with parameters:
+ Threshold = 44
+ Min Length = 350
+ Max Gap = 62
+(These might not suffice under certain conditions but we won't know that without more training data.)
+
+Next steps:
+Initially I will crop the image into vertical slices. Since there are often vertical ribs, I will need a heuristic. But the results don't need to be exact (and if the sides of the trailer are well lit, this might not be easy.)
+Then I will try to find the top & bottom of each face, allowing for some perspective skewing.
+This could lead to an auto-cropping tool we can use with CIDAR or other APIs.
+Further down the road I will try to unskew the container faces.
+
+

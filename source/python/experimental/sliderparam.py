@@ -4,7 +4,7 @@ import cv2
 import argparse
 
 class sliderparam():
-    def __init__(self, description, maxValue, value, updateFn, sliderToValue=lambda(x):x, valueToSlider=lambda(x):x):
+    def __init__(self, description, maxValue, value, updateFn=None, sliderToValue=lambda(x):x, valueToSlider=lambda(x):x):
         assert value <= maxValue
         self.description = description
         self.maxValue = maxValue
@@ -15,6 +15,11 @@ class sliderparam():
         self.sliderValue = valueToSlider(value)
         self.maxSliderValue = valueToSlider(maxValue)
 
+    def updateFromSlider(self, newValue):
+        self.assignFromSlider(newValue)
+        if self.updateFn != None:
+            self.updateFn()
+
     def assignFromSlider(self, sliderValue):
         self.sliderValue = sliderValue
         self.value = self.mapSliderToValue(sliderValue)
@@ -24,10 +29,15 @@ class sliderparam():
         self.sliderValue = self.mapValueToSlider(value)
 
     def createSlider(self, window):
-        cv2.createTrackbar(self.description, window, self.sliderValue, self.maxSliderValue, self.updateFn)
+        cv2.createTrackbar(self.description, window, self.sliderValue, self.maxSliderValue, self.updateFromSlider)
 
     def __str__(self):
         return self.description + " = " + str(self.value)
+
+class kernelparam(sliderparam):
+    def __init__(self, description, maxValue, value, updateFn, ):
+        sliderparam.__init__(self, description, maxValue, value, updateFn, sliderToValue=mapSliderToKernelSize, valueToSlider=mapKernelSizeToSlider)
+
 
 def annotateImageWithParams(param_dict, image):
     y = 50
@@ -66,3 +76,8 @@ def setValuesFromCommandLine(param_dict, args):
         p.assignFromValue(val)
 
 
+def mapSliderToKernelSize(n):
+    return n*2 + 3
+
+def mapKernelSizeToSlider(n):
+    return (n - 3)/2
