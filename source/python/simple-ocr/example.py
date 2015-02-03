@@ -23,20 +23,24 @@ if __name__ == '__main__':
     verbose = args.verbose
     force_train = args.retrain
 
-    segmenter = MinContourSegmenter(blur_y=5, blur_x=5, block_size=17, c=6, max_ratio=4.0)
+    segmenter = MinContourSegmenter(blur_y=5, blur_x=5, min_width=5, block_size=17, c=6, max_ratio=4.0)
     extractor = SimpleFeatureExtractor(feature_size=10, stretch=False)
-    classifier = KNNClassifier(k=1 )
+    classifier = KNNClassifier(k=3 )
     ocr = OCR(segmenter, extractor, classifier)
 
     for file_to_train in args.trainfile:
         training_image = ImageFile(file_to_train)
         if not training_image.isGrounded() or force_train:
-            trainingsegmenter = ContourSegmenter(blur_y=5, blur_x=5, block_size=23, c=3)
+            #trainingsegmenter = ContourSegmenter(blur_y=1, blur_x=1, min_width=3, min_height=15, max_height=50, min_area=30, block_size=23, c=3) # tweaked for black font
+            trainingsegmenter = ContourSegmenter(blur_y=1, blur_x=1, min_width=3, min_height=15, max_height=50, min_area=30, block_size=3 , c=5, nearline_tolerance=10.0   ) # tweaked for white font
             segments = trainingsegmenter.process(training_image.image)
             if verbose:
                 trainingsegmenter.display()
-            grounder = TextGrounder()
-            grounder.ground(training_image, segments, "0123456789")  # writes out a .box file of image ground truths
+
+            # grounder = UserGrounder()   # interactive version; lets the user review, assign ground truth data
+            grounder = TextGrounder()   # non-interactive ground-truth - assumes clean, ordered input
+            grounder.ground(training_image, segments, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")  # writes out a .box file of image ground truths
+
 
         ocr.train(training_image)
 
