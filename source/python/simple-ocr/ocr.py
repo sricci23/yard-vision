@@ -42,5 +42,8 @@ class OCR( object ):
             self.segmenter.display()
 
         features= self.feature_extractor.extract( image_file.image , segments, show_steps )
-        classes= self.classifier.classify( features )
-        return classes, segments
+        if (len(features) != 0):
+            classes= self.classifier.classify( features )
+            return classes, segments
+        else:
+            return [], segments
