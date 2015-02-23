@@ -1,0 +1,2 @@
+/usr/bin/ar cq libdiego_opencv.a  CMakeFiles/diego_opencv.dir/cmake_dummy.cpp.o
+/usr/bin/ranlib libdiego_opencv.a

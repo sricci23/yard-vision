@@ -1,0 +1,2 @@
+/Users/smalus/biicodeProjects/cpp/build/diego/opencv/CMakeFiles/diego_opencv.dir
+/Users/smalus/biicodeProjects/cpp/build/smalus/simpleOCRExample/CMakeFiles/smalus_simpleOCRExample_main.dir
