@@ -5,6 +5,7 @@ from feature_extraction import SimpleFeatureExtractor
 from classification import KNNClassifier
 from ocr import OCR, accuracy, show_differences, reconstruct_chars
 from grounding import UserGrounder, TextGrounder
+import tesseract
 
 
 if __name__ == '__main__':
@@ -18,10 +19,14 @@ if __name__ == '__main__':
     parser.add_argument('--trainfile', help='training data', type=str, nargs="+", default=[])
     parser.add_argument('--dir', help='directory of files to classify', default='yard_images')
     parser.add_argument('--file', help='file to classify', type=str, nargs="*", default=[])
+    parser.add_argument('--tesseract', help='use tesseract for OCR', action='store_true')
+    parser.add_argument('--tesslangpath', help='file path for tesseract', type=str)
     args = parser.parse_args()
 
     verbose = args.verbose
     force_train = args.retrain
+    use_tesseract = args.tesseract
+    tesslangpath = args.tesslangpath
 
     segmenter = MinContourSegmenter(blur_y=5, blur_x=5, min_width=5, block_size=17, c=6, max_ratio=4.0)
     extractor = SimpleFeatureExtractor(feature_size=10, stretch=False)
@@ -55,11 +60,26 @@ if __name__ == '__main__':
         test_images = get_image_filenames(args.dir)
     else:
         raise Exception("Need --dir [directory] or [--file <image> ..]")
+    
+    if (use_tesseract):
+        api = tesseract.TessBaseAPI()
+        api.Init(tesslangpath, "eng", tesseract.OEM_DEFAULT)
+        api.SetPageSegMode(tesseract.PSM_SINGLE_CHAR)
+        api.SetVariable("tessedit_char_whitelist", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
     # classify
     for fname in test_images:
         test_image = ImageFile(fname)
         test_classes, test_segments = ocr.ocr(test_image, show_steps=verbose)
+        if (use_tesseract):
+            tesseract_image = tesseract.pixRead(fname)
+            api.SetImage(tesseract_image)
+            tesseract_classes = []
+            for segment in test_segments:
+                api.SetRectangle(int(segment[0]), int(segment[1]), int(segment[2]), int(segment[3]))
+                text = api.GetUTF8Text()[0]
+                tesseract_classes.append(text)
+            test_classes = tesseract_classes
         image = test_image.image.copy()
         opencv_utils.draw_segments(image, test_segments, color=(255, 0, 0), line_width=1)
         opencv_utils.draw_classes(image, test_segments, test_classes, color=(255, 255, 0), line_width=2)
@@ -70,3 +90,6 @@ if __name__ == '__main__':
             print "accuracy:", accuracy(test_image.ground.classes, test_classes)
             print "OCRed text:\n", reconstruct_chars(test_classes)
             show_differences(test_image.image, test_segments, test_image.ground.classes, test_classes)
+    
+    if (use_tesseract):
+        api.End()
