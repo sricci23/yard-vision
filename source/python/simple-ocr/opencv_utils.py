@@ -83,8 +83,8 @@ def background_color( image, numpy_result=True ):
 def show_image_and_wait_for_key( image, label="Image", return_arrow_keys=False ):
     '''Shows an image, waits for a key, returns that key. Option to allow arrow keys '''
     print "showing",label,"(waiting for input)"
-    cv2.namedWindow( 'norm', cv2.CV_WINDOW_AUTOSIZE);
-    cv2.resizeWindow('norm', 2000, 1104 );
+    cv2.namedWindow( 'norm', cv2.WINDOW_NORMAL);
+    cv2.resizeWindow('norm', 1000, 1000 );
     cv2.imshow('norm',image)
     key = ask_for_key(return_arrow_keys)
     cv2.destroyWindow('norm')
