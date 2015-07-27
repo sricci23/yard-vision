@@ -3,6 +3,7 @@ import numpy
 from classification import classes_from_numpy, classes_to_numpy
 from segmentation import segments_from_numpy, segments_to_numpy
 from operator import itemgetter
+import tesseract
 
 
     

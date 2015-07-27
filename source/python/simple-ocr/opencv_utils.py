@@ -2,6 +2,7 @@ from numpy_utils import OverflowPreventer
 from processor import DisplayingProcessor, ProcessorStack
 import numpy
 import cv2
+import Image
 
 class ImageProcessor( DisplayingProcessor ):
     def display( self, display_before=True ):
@@ -113,3 +114,12 @@ def draw_classes( image, segments, classes, color=(255,0,0), font_scale=1.0, lin
         except:
             c=uc
         cv2.putText(image, c, (x,y+h), cv2.FONT_HERSHEY_PLAIN, font_scale, color, line_width, bottomLeftOrigin=False)
+        
+def threshold(image):
+    return cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 10)
+
+def create_dummy_image(image_name, segment, dummy_name):
+    image = cv2.imread(image_name, cv2.IMREAD_GRAYSCALE)
+    cropped = image[segment[1] : segment[1] + segment[3], segment[0] : segment[0] + segment[2]]
+    processed = threshold(cropped)
+    cv2.imwrite(dummy_name, processed)

@@ -10,6 +10,7 @@ import tesseract_utils
 import prim
 from operator import itemgetter
 from collections import OrderedDict
+import os
 
 
 if __name__ == '__main__':
@@ -57,6 +58,9 @@ if __name__ == '__main__':
 
     # Classify given image(s) using training data
     test_images = []
+    dummy_name = args.dir + "\\dummy.jpg"
+    if os.path.isfile(dummy_name):
+        os.remove(dummy_name)
     if args.file != None and len(args.file) > 0:
         for file_to_classify in args.file:
             img = find_image_file(file_to_classify)
@@ -84,7 +88,6 @@ if __name__ == '__main__':
         test_classes, test_segments = ocr.ocr(test_image, show_steps=verbose)
         if use_tesseract:
             tesseract_image = tesseract.pixRead(fname)
-            api.SetImage(tesseract_image)
             tesseract_classes = []
             cluster_list = []
             for segment in test_segments:
@@ -101,8 +104,12 @@ if __name__ == '__main__':
                 cluster_pattern_list.append([cluster_segments, pattern])
                 whitelist = tesseract_utils.get_whitelist(segment, cluster_segments, pattern)
                 api.SetVariable("tessedit_char_whitelist", whitelist)
-                api.SetRectangle(int(segment[0]), int(segment[1]), int(segment[2]), int(segment[3]))
-                text = api.GetUTF8Text()[0]
+                opencv_utils.create_dummy_image(fname, segment, dummy_name)
+                api.SetImage(tesseract.pixRead(dummy_name))
+                text = " "
+                result = api.GetUTF8Text()
+                if len(result) > 0:
+                    text = result[0]
                 if text == " ":
                     if len(whitelist) == 10:
                         text = "#"
